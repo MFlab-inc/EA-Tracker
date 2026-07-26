@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ナンピン運用記録 | 公開ページ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --base:#F5F7FA; --surface:#FFFFFF; --ink:#1F2B3E; --sub:#5A6B82;
+  --indigo:#2C5AA0; --indigo-deep:#1E3F73; --hairline:#E2E8F1;
+  --pass:#1D7A55; --pass-bg:#EAF6F0; --caution:#A8720E; --caution-bg:#FBF3E2;
+  --alert:#B3372E; --alert-bg:#FBEEEC; --track:#D8E2EF;
+  --serif:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --sans:"IBM Plex Sans JP","Hiragino Sans","Yu Gothic UI",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--base);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.75;
+  font-feature-settings:"tnum";-webkit-font-smoothing:antialiased}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+/* ヘッダー */
+header{background:var(--surface);border-bottom:3px solid var(--indigo-deep)}
+.head-in{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:26px 0 20px}
+h1{font-family:var(--serif);font-weight:700;font-size:26px;letter-spacing:.04em}
+.head-sub{color:var(--sub);font-size:13px}
+.badge-view{display:inline-block;border:1px solid var(--indigo);color:var(--indigo);
+  border-radius:3px;font-size:11.5px;padding:1px 9px;letter-spacing:.08em;vertical-align:3px}
+.head-meta{margin-left:auto;color:var(--sub);font-size:12.5px;text-align:right}
+.pair-tabs{display:flex;gap:8px;padding-bottom:14px}
+.pair-tab{border:1px solid var(--hairline);background:var(--surface);border-radius:4px;
+  padding:4px 16px;font-size:13.5px;cursor:pointer;color:var(--sub);font-family:var(--sans)}
+.pair-tab.active{border-color:var(--indigo);color:var(--indigo);font-weight:600}
+
+/* セクション */
+section{margin:44px 0}
+h2{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:.06em;
+  padding-bottom:8px;border-bottom:1px solid var(--hairline);margin-bottom:20px}
+h2 .en{font-family:var(--sans);font-weight:400;font-size:11px;color:var(--sub);
+  letter-spacing:.14em;margin-left:12px;vertical-align:2px}
+.note{color:var(--sub);font-size:13px}
+
+/* シグネチャ: フェーズ回復ロードマップ */
+.roadmap-card{background:var(--surface);border:1px solid var(--hairline);border-radius:8px;
+  padding:30px 28px 26px;box-shadow:0 1px 3px rgba(31,43,62,.05)}
+.roadmap{display:flex;align-items:flex-start;position:relative;margin:18px 0 8px}
+.roadmap::before{content:"";position:absolute;top:13px;left:12%;right:12%;height:2px;background:var(--track)}
+.station{flex:1;text-align:center;position:relative;z-index:1}
+.dot{width:28px;height:28px;border-radius:50%;margin:0 auto 10px;background:var(--surface);
+  border:2px solid var(--track);display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--track)}
+.station.done .dot{border-color:var(--indigo);background:var(--indigo);color:#fff}
+.station.current .dot{border-color:var(--indigo);background:var(--surface);color:var(--indigo);
+  box-shadow:0 0 0 5px rgba(44,90,160,.12);font-weight:600}
+.station .st-name{font-family:var(--serif);font-weight:600;font-size:15.5px}
+.station.current .st-name{color:var(--indigo)}
+.station .st-desc{font-size:11.5px;color:var(--sub);margin-top:2px}
+.now-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px;
+  padding-top:18px;border-top:1px dashed var(--hairline)}
+.phase-big{font-family:var(--serif);font-weight:700;font-size:23px;color:var(--indigo-deep)}
+.status-badge{border-radius:20px;font-size:13px;font-weight:600;padding:2px 15px}
+.st-pass{background:var(--pass-bg);color:var(--pass)}
+.st-caution{background:var(--caution-bg);color:var(--caution)}
+.st-alert{background:var(--alert-bg);color:var(--alert)}
+.now-meta{color:var(--sub);font-size:13px}
+.checks{margin-top:16px;display:grid;gap:8px}
+.check{display:flex;gap:10px;align-items:baseline;font-size:13.5px}
+.check .mark{font-weight:700;width:16px;text-align:center;flex:none}
+.check.ok .mark{color:var(--pass)}.check.ng .mark{color:var(--sub)}
+.check .lbl{color:var(--ink)}
+.check .val{color:var(--sub)}
+.next-judge{margin-top:14px;font-size:13px;color:var(--indigo-deep);background:#EDF2FA;
+  border-radius:5px;padding:8px 14px;display:inline-block}
+
+/* テーブル */
+table{width:100%;border-collapse:collapse;background:var(--surface);font-size:13.5px}
+th{font-weight:500;color:var(--sub);text-align:left;font-size:12px;letter-spacing:.05em;
+  padding:9px 12px;border-bottom:1.5px solid var(--hairline);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--hairline);vertical-align:top}
+.num{text-align:right;white-space:nowrap}
+.tbl-card{background:var(--surface);border:1px solid var(--hairline);border-radius:8px;
+  overflow:hidden;box-shadow:0 1px 3px rgba(31,43,62,.05)}
+.tbl-scroll{overflow-x:auto}
+.chip-over{color:var(--caution);font-weight:600}
+.chip-zero{color:var(--sub)}
+
+/* フェーズ基準表 */
+.crit-pass{color:var(--indigo);font-weight:500}
+.crit-caution{color:var(--caution)}
+.crit-alert{color:var(--alert)}
+tr.row-current td{background:#F3F7FC}
+
+/* 週間記録リスト */
+.week-item{background:var(--surface);border:1px solid var(--hairline);border-radius:8px;
+  padding:16px 20px;margin-bottom:12px;box-shadow:0 1px 3px rgba(31,43,62,.04)}
+.week-head{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.week-title{font-weight:600;font-size:14.5px}
+.week-stats{display:flex;gap:18px;color:var(--sub);font-size:13px;flex-wrap:wrap}
+.week-stats b{color:var(--ink);font-weight:600}
+.week-memo{margin-top:8px;padding-top:8px;border-top:1px dashed var(--hairline);
+  font-size:13px;color:#3C4B61;white-space:pre-line}
+.src-tag{font-size:10.5px;color:var(--sub);border:1px solid var(--hairline);border-radius:3px;
+  padding:0 6px;margin-left:auto;white-space:nowrap}
+
+/* チャート */
+.charts{display:grid;gap:18px;margin-bottom:26px}
+.chart-card{background:var(--surface);border:1px solid var(--hairline);border-radius:8px;
+  padding:18px 20px 10px;box-shadow:0 1px 3px rgba(31,43,62,.05)}
+.chart-card h3{font-size:13px;font-weight:600;color:var(--sub);letter-spacing:.04em;margin-bottom:6px}
+.chart-box{position:relative;height:190px}
+
+/* モードカード */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:640px){.modes{grid-template-columns:1fr}}
+.mode-card{background:var(--surface);border:1px solid var(--hairline);border-top:3px solid var(--pass);
+  border-radius:8px;padding:20px 22px;box-shadow:0 1px 3px rgba(31,43,62,.05)}
+.mode-card.expanded{border-top-color:var(--caution)}
+.mode-card h3{font-family:var(--serif);font-size:16px;font-weight:600;margin-bottom:2px}
+.mode-card .cond{font-size:12px;color:var(--sub);margin-bottom:12px}
+.mode-card dl{display:grid;grid-template-columns:1fr auto;row-gap:6px;font-size:13.5px}
+.mode-card dt{color:var(--sub)}
+.mode-card dd{text-align:right;font-weight:600}
+.mode-card .total dd{color:var(--pass)}
+.mode-card.expanded .total dd{color:var(--caution)}
+.mode-active-tag{font-size:11px;color:var(--indigo);border:1px solid var(--indigo);
+  border-radius:3px;padding:0 7px;margin-left:8px;vertical-align:2px}
+
+/* フッター */
+footer{margin-top:56px;background:var(--surface);border-top:1px solid var(--hairline);
+  padding:30px 0 40px;color:var(--sub);font-size:12.5px}
+footer h3{font-size:12.5px;color:var(--ink);font-weight:600;margin-bottom:6px}
+footer p{margin-bottom:10px}
+.loading,.load-error{text-align:center;color:var(--sub);padding:60px 0}
+.load-error{color:var(--alert)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="head-in">
+      <h1 id="pair-title">ナンピン運用記録</h1>
+      <span class="badge-view">閲覧専用・公開記録</span>
+      <div class="head-meta">最終更新: <span id="last-update">—</span></div>
+    </div>
+    <div class="pair-tabs" id="pair-tabs" hidden></div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="loading" id="loading">読み込んでいます…</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <h3>このページについて</h3>
+    <p>本ページは、ナンピン型運用の週次確認・四半期確認・ロット段階(フェーズ)管理の記録を、説明責任の一環として公開するものです。閲覧専用であり、このページから記録を変更することはできません。</p>
+    <h3>数値の出典</h3>
+    <p>「最大日足(pips)」「100pips超回数」は、Twelve Data社の日足データ(ニューヨーククローズ基準)から自動計算しています(2026年7月26日以前の記録は移行前システムでの手動確認値)。「DD率」は運用口座の実績値、「メモ」は運用担当者による記録です。</p>
+    <h3>免責</h3>
+    <p>本ページの内容は運用状況の事実記録であり、投資助言・売買推奨ではありません。過去の実績は将来の成果を保証するものではありません。</p>
+  </div>
+</footer>
+
+<script>
+'use strict';
+const $ = (s) => document.querySelector(s);
+const fmt1 = (n) => Number(n).toLocaleString('ja-JP', { maximumFractionDigits: 1 });
+const fmtD = (iso) => { const d = new Date(iso); return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`; };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const state = { config: null, pair: null, data: {} };
+
+async function getJson(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);
+  return r.json();
+}
+
+async function boot() {
+  try {
+    state.config = await getJson('config/pairs.json');
+    const pairs = Object.keys(state.config).filter((k) => !k.startsWith('_'));
+    state.pair = pairs[0];
+    if (pairs.length > 1) {
+      const tabs = $('#pair-tabs');
+      tabs.hidden = false;
+      tabs.innerHTML = pairs.map((p) =>
+        `<button class="pair-tab" data-pair="${p}">${esc(state.config[p].label)}</button>`).join('');
+      tabs.addEventListener('click', (e) => {
+        const b = e.target.closest('.pair-tab'); if (!b) return;
+        state.pair = b.dataset.pair; render();
+      });
+    }
+    await render();
+  } catch (e) {
+    $('#main').innerHTML = `<div class="load-error">データの読み込みに失敗しました。時間をおいて再度お試しください。<br><span style="font-size:11px">${esc(e.message)}</span></div>`;
+  }
+}
+
+async function loadPair(pair) {
+  if (!state.data[pair]) {
+    const [weekly, quarterly, phase] = await Promise.all([
+      getJson(`data/${pair}/weekly.json`), getJson(`data/${pair}/quarterly.json`), getJson(`data/${pair}/phase.json`),
+    ]);
+    state.data[pair] = { weekly, quarterly, phase };
+  }
+  return state.data[pair];
+}
+
+/* 昇格条件チェック(test/run-tests.jsと同一規則) */
+function promotionCheck(weeklyRows, phase, cfg) {
+  const N = phase.current.rolling_weeks;
+  const win = [...weeklyRows].sort((a, b) => b.week.localeCompare(a.week)).slice(0, N);
+  const rollingDD = win.length ? Math.max(...win.map((r) => r.dd_rate)) : null;
+  const events = win.filter((r) => r.max_daily_pips >= cfg.high_vola_pips).length;
+  const nextJudge = new Date(new Date(phase.current.changed_at + 'T00:00:00Z').getTime() + N * 7 * 86400000);
+  const elapsed = Date.now() >= nextJudge.getTime();
+  return { rollingDD, events, nextJudge, elapsed, dataWeeks: win.length, N };
+}
+
+function statusOf(rollingDD, ph) {
+  if (rollingDD === null) return { cls: 'st-caution', label: 'データ不足' };
+  if (rollingDD <= ph.pass_max) return { cls: 'st-pass', label: '合格' };
+  if (rollingDD <= ph.caution_max) return { cls: 'st-caution', label: '注意' };
+  return { cls: 'st-alert', label: '基準超過' };
+}
+
+let charts = [];
+async function render() {
+  const pair = state.pair;
+  const cfg = state.config[pair];
+  $('#pair-title').textContent = `${cfg.label} ナンピン運用記録`;
+  document.title = `${cfg.label} ナンピン運用記録 | 公開ページ`;
+  document.querySelectorAll('.pair-tab').forEach((b) => b.classList.toggle('active', b.dataset.pair === pair));
+
+  const { weekly, quarterly, phase } = await loadPair(pair);
+  const updated = [weekly.updated_at, quarterly.updated_at, phase.updated_at].sort().pop();
+  $('#last-update').textContent = fmtD(updated);
+
+  const rows = [...weekly.rows].sort((a, b) => a.week.localeCompare(b.week));
+  const latestQ = quarterly.rows.length ? quarterly.rows[quarterly.rows.length - 1] : null;
+  const curPhase = phase.current.phase;
+  const ph = cfg.phases[curPhase];
+  const chk = promotionCheck(rows, phase, cfg);
+  const st = statusOf(chk.rollingDD, ph);
+  const order = cfg.phase_order;
+  const curIdx = order.indexOf(curPhase);
+
+  charts.forEach((c) => c.destroy()); charts = [];
+
+  $('#main').innerHTML = `
+  <section>
+    <h2>ロット・フェーズ管理<span class="en">PHASE CONTROL</span></h2>
+    <div class="roadmap-card">
+      <div class="note">大きなドローダウン発生時はロットを段階的に落とし、下記の客観基準を満たした場合のみ段階的に復帰します。</div>
+      <div class="roadmap">
+        ${order.map((p, i) => `
+          <div class="station ${i < curIdx ? 'done' : i === curIdx ? 'current' : ''}">
+            <div class="dot">${i < curIdx ? '✓' : i + 1}</div>
+            <div class="st-name">${esc(cfg.phases[p].label)}</div>
+            <div class="st-desc">DD ${cfg.phases[p].pass_max}%以内で合格</div>
+          </div>`).join('')}
+      </div>
+      <div class="now-line">
+        <span class="phase-big">${esc(ph.label)}</span>
+        <span class="status-badge ${st.cls}">${st.label}</span>
+        <span class="now-meta">ローリングDD(直近${chk.N}週): ${chk.rollingDD === null ? '—' : fmt1(chk.rollingDD) + '%'} | データ${chk.dataWeeks}週分</span>
+      </div>
+      <div class="checks">
+        <div class="check ${chk.rollingDD !== null && chk.rollingDD <= ph.pass_max ? 'ok' : 'ng'}">
+          <span class="mark">${chk.rollingDD !== null && chk.rollingDD <= ph.pass_max ? '✓' : '✗'}</span>
+          <span class="lbl">ローリングDD(直近${chk.N}週)</span>
+          <span class="val">最大 ${chk.rollingDD === null ? '—' : fmt1(chk.rollingDD) + '%'} / 合格基準 ${ph.pass_max}%以内</span>
+        </div>
+        <div class="check ${chk.events >= phase.current.required_high_vola_events ? 'ok' : 'ng'}">
+          <span class="mark">${chk.events >= phase.current.required_high_vola_events ? '✓' : '✗'}</span>
+          <span class="lbl">${cfg.high_vola_pips}pips超イベントの経験</span>
+          <span class="val">${chk.events}回 / 必要${phase.current.required_high_vola_events}回以上</span>
+        </div>
+        <div class="check ${chk.elapsed ? 'ok' : 'ng'}">
+          <span class="mark">${chk.elapsed ? '✓' : '✗'}</span>
+          <span class="lbl">ローリング判定期間の経過</span>
+          <span class="val">${chk.elapsed ? '経過済み' : '未経過(次回判定日まで待機)'}</span>
+        </div>
+      </div>
+      <div class="next-judge">次回フェーズ判定可能: ${fmtD(chk.nextJudge)} 頃(前回変更日 + ${chk.N}週)</div>
+    </div>
+
+    <div class="tbl-card" style="margin-top:18px">
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>フェーズ</th><th>合格</th><th>注意</th><th>降格</th></tr></thead>
+        <tbody>
+          ${order.map((p) => `
+            <tr class="${p === curPhase ? 'row-current' : ''}">
+              <td>${esc(cfg.phases[p].label)}${p === curPhase ? ' <span class="mode-active-tag">現在</span>' : ''}</td>
+              <td class="crit-pass">≤ ${cfg.phases[p].pass_max}%</td>
+              <td class="crit-caution">${cfg.phases[p].pass_max}〜${cfg.phases[p].caution_max}%</td>
+              <td class="crit-alert">&gt; ${cfg.phases[p].caution_max}%${cfg.phases[p].demote_label !== '降格' ? '(' + esc(cfg.phases[p].demote_label) + ')' : ''}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+
+    ${phase.history.length ? `
+    <h2 style="margin-top:36px">フェーズ変更履歴<span class="en">CHANGE LOG</span></h2>
+    <div class="tbl-card"><div class="tbl-scroll"><table>
+      <thead><tr><th>日付</th><th>変更内容</th><th>理由</th><th>変更者</th></tr></thead>
+      <tbody>${[...phase.history].reverse().map((h) => `
+        <tr><td style="white-space:nowrap">${fmtD(h.changed_at)}</td>
+        <td style="white-space:nowrap">${esc(cfg.phases[h.from_phase]?.label || h.from_phase)} → ${esc(cfg.phases[h.to_phase]?.label || h.to_phase)}</td>
+        <td style="min-width:260px">${esc(h.reason)}</td><td>${esc(h.changed_by)}</td></tr>`).join('')}
+      </tbody></table></div></div>` : ''}
+  </section>
+
+  <section>
+    <h2>週間確認<span class="en">WEEKLY REVIEW</span></h2>
+    <div class="note" style="margin-bottom:16px">毎週、前週の値動きと口座状況を確認して記録しています。最大日足(pips)・100pips超回数は市場データからの自動計算です。</div>
+    <div class="charts">
+      <div class="chart-card"><h3>最大日足(pips)の推移</h3><div class="chart-box"><canvas id="ch-pips"></canvas></div></div>
+      <div class="chart-card"><h3>DD率(%)の推移</h3><div class="chart-box"><canvas id="ch-dd"></canvas></div></div>
+      <div class="chart-card"><h3>100pips超回数の推移</h3><div class="chart-box"><canvas id="ch-over"></canvas></div></div>
+    </div>
+    <div id="week-list">
+      ${[...rows].reverse().map((r) => `
+        <article class="week-item">
+          <div class="week-head">
+            <span class="week-title">${esc(r.week)} 週</span>
+            <span class="week-stats">
+              <span>最大日足 <b>${fmt1(r.max_daily_pips)}</b> pips</span>
+              <span>100pips超 <b class="${r.over100_count > 0 ? 'chip-over' : 'chip-zero'}">${r.over100_count}回</b></span>
+              <span>DD率 <b>${fmt1(r.dd_rate)}%</b></span>
+              <span>記録: ${esc(r.recorded_by)}(${fmtD(r.recorded_at)})</span>
+            </span>
+            <span class="src-tag">${r.source === 'auto_market_calc' ? '市場データ自動計算' : '移行データ'}</span>
+          </div>
+          ${r.memo ? `<div class="week-memo">${esc(r.memo)}</div>` : ''}
+        </article>`).join('')}
+    </div>
+  </section>
+
+  <section>
+    <h2>ナンピン設定・モード判定基準<span class="en">MODE CRITERIA</span></h2>
+    <div class="note" style="margin-bottom:16px">四半期ごとに直近3ヶ月の平均ボラティリティを確認し、80pipsを境にナンピン間隔を切り替えます。</div>
+    <div class="modes">
+      ${['normal', 'expanded'].map((mk) => { const m = cfg.modes[mk]; return `
+      <div class="mode-card ${mk}">
+        <h3>${esc(m.label)}${latestQ && latestQ.mode === mk ? '<span class="mode-active-tag">適用中</span>' : ''}</h3>
+        <div class="cond">${esc(m.condition)}</div>
+        <dl>
+          <dt>ナンピン間隔</dt><dd>${m.nampin_interval} pips</dd>
+          <dt>最大保有ポジション</dt><dd>${m.max_positions} ポジ</dd>
+          <dt>最終ポジション間隔</dt><dd>${m.last_position_gap} pips</dd>
+        </dl>
+        <dl class="total" style="border-top:1px dashed var(--hairline);margin-top:8px;padding-top:8px">
+          <dt>合計pips(最終ポジまで)</dt><dd>${m.total_pips} pips</dd>
+        </dl>
+      </div>`; }).join('')}
+    </div>
+    ${quarterly.rows.length ? `
+    <div class="tbl-card" style="margin-top:18px"><div class="tbl-scroll"><table>
+      <thead><tr><th>四半期</th><th class="num">3ヶ月平均ボラ</th><th class="num">前月最大足</th><th>モード判定</th><th class="num">間隔</th><th>メモ</th><th>記録者</th></tr></thead>
+      <tbody>${[...quarterly.rows].reverse().map((q) => `
+        <tr><td style="white-space:nowrap">${esc(q.quarter)}</td>
+        <td class="num">${fmt1(q.avg_vola_3m)} pips</td>
+        <td class="num">${fmt1(q.max_candle_pips)} pips</td>
+        <td style="white-space:nowrap">${esc(cfg.modes[q.mode]?.label || q.mode)}</td>
+        <td class="num">${q.nampin_interval} pips</td>
+        <td style="min-width:220px;white-space:pre-line">${esc(q.memo)}</td>
+        <td>${esc(q.recorded_by)}</td></tr>`).join('')}
+      </tbody></table></div></div>` : ''}
+  </section>`;
+
+  drawCharts(rows, cfg, ph);
+}
+
+function drawCharts(rows, cfg, ph) {
+  const labels = rows.map((r) => r.week);
+  const base = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: '#EEF2F7' }, ticks: { color: '#5A6B82', font: { size: 11 } } },
+      y: { grid: { color: '#EEF2F7' }, ticks: { color: '#5A6B82', font: { size: 11 } } },
+    },
+  };
+  const line = (color, fill) => ({ borderColor: color, backgroundColor: fill, borderWidth: 2, pointRadius: 3.5, pointBackgroundColor: color, tension: .35, fill: true });
+  const hline = (v, color) => ({ data: labels.map(() => v), borderColor: color, borderDash: [5, 4], borderWidth: 1.2, pointRadius: 0, fill: false });
+
+  charts.push(new Chart($('#ch-pips'), { type: 'line', data: { labels, datasets: [
+    { data: rows.map((r) => r.max_daily_pips), ...line('#2C5AA0', 'rgba(44,90,160,.07)') },
+    hline(cfg.over_threshold_pips, '#B3372E'), hline(cfg.high_vola_pips, '#A8720E'),
+  ] }, options: { ...base, scales: { ...base.scales, y: { ...base.scales.y, suggestedMin: 0 } } } }));
+
+  charts.push(new Chart($('#ch-dd'), { type: 'line', data: { labels, datasets: [
+    { data: rows.map((r) => r.dd_rate), ...line('#1D7A55', 'rgba(29,122,85,.07)') },
+    hline(ph.pass_max, '#A8720E'), hline(ph.caution_max, '#B3372E'),
+  ] }, options: { ...base, scales: { ...base.scales, y: { ...base.scales.y, suggestedMin: 0, suggestedMax: Math.max(ph.caution_max * 1.15, 1) } } } }));
+
+  charts.push(new Chart($('#ch-over'), { type: 'bar', data: { labels, datasets: [
+    { data: rows.map((r) => r.over100_count), backgroundColor: 'rgba(168,114,14,.55)', borderRadius: 3 },
+  ] }, options: { ...base, scales: { ...base.scales, y: { ...base.scales.y, beginAtZero: true, ticks: { ...base.scales.y.ticks, stepSize: 1 } } } } }));
+}
+
+boot();
+</script>
+</body>
+</html>

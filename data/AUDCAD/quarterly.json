@@ -1,0 +1,20 @@
+{
+  "pair": "AUDCAD",
+  "updated_at": "2026-07-26T07:52:11.188Z",
+  "rows": [
+    {
+      "recorded_at": "2026-06-01T08:43:19.000Z",
+      "recorded_by": "田中",
+      "quarter": "2026-Q2",
+      "avg_vola_3m": 85.94,
+      "max_candle_pips": 185.2,
+      "mode": "expanded",
+      "nampin_interval": 32,
+      "max_positions": 7,
+      "last_position_gap": 60,
+      "total_pips": 252,
+      "memo": "他国より先に豪州が利上げフェーズに入っていた時期。\nその上レアアースなどの資源国通貨として強い状況。",
+      "source": "manus_migration"
+    }
+  ]
+}

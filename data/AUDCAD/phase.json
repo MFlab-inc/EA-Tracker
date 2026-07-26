@@ -1,0 +1,21 @@
+{
+  "pair": "AUDCAD",
+  "updated_at": "2026-07-26T07:52:11.188Z",
+  "current": {
+    "phase": "25",
+    "total_pips_to_last_position": 200,
+    "rolling_weeks": 4,
+    "required_high_vola_events": 1,
+    "changed_at": "2026-06-29",
+    "updated_at": "2026-07-19T07:22:44.000Z"
+  },
+  "history": [
+    {
+      "changed_at": "2026-06-29",
+      "from_phase": "50",
+      "to_phase": "25",
+      "reason": "韓国SKハイニックスが「HBM（広帯域メモリー）の生産拡大抑制」を発表したことを起点に、韓国KOSPI市場でサーキットブレーカーが発動。世界的に半導体株への売りが波及し、景気に左右される豪ドルに関しても影響を受けた下落が入った。",
+      "changed_by": "吉川"
+    }
+  ]
+}

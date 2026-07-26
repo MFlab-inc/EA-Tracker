@@ -1,0 +1,25 @@
+{
+  "_note": "ナンピン管理の公開設定。ペア追加時はこのファイルにキーを追加し、data/<PAIR>/ と inbox/<PAIR>/ を作成する。",
+  "AUDCAD": {
+    "label": "AUD/CAD",
+    "pip": 0.0001,
+    "digits": 5,
+    "over_threshold_pips": 100,
+    "high_vola_pips": 80,
+    "history_source": {
+      "url": "https://raw.githubusercontent.com/MFlab-inc/EA-Risk-Monitor/main/data/history/AUDCAD.json",
+      "note": "Twelve Data日足(NYクローズ基準セッション日付)。EA-Risk-Monitorが毎営業日更新"
+    },
+    "modes": {
+      "normal":   { "label": "通常モード",     "condition": "ボラ < 80pips",  "nampin_interval": 25, "max_positions": 7, "last_position_gap": 50, "total_pips": 200 },
+      "expanded": { "label": "ボラ拡大モード", "condition": "ボラ ≥ 80pips", "nampin_interval": 32, "max_positions": 7, "last_position_gap": 60, "total_pips": 252 }
+    },
+    "mode_switch_vola_pips": 80,
+    "phases": {
+      "25":  { "label": "25%検証", "pass_max": 6.3,  "caution_max": 8.8,  "demote_label": "降格" },
+      "50":  { "label": "50%復帰", "pass_max": 12.5, "caution_max": 17.5, "demote_label": "降格" },
+      "100": { "label": "100%通常", "pass_max": 25,  "caution_max": 33,   "demote_label": "33%損切り" }
+    },
+    "phase_order": ["25", "50", "100"]
+  }
+}
